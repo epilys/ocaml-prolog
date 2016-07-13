@@ -34,33 +34,23 @@ let parse lexbuf =
   | Parser.Error ->
           fprintf stdout "%a: syntax error\n" print_position lexbuf;  []
 
-          (*
-let rec print_parsed l =
-    let rec loop x =
-        match x with
-        | [] -> ()
-        | (Compound hd)::tl -> Syntax.print_compound hd ; loop tl
-        | (Load f)::_ -> parse_file f; ()
-        | _ -> halt ()
-    in
-        loop l*)
 let parse_file filename =
     let fullname = (String.concat ~sep:"" [filename;".pl"]) in
     let inx = In_channel.create fullname in
     let lexbuf = Lexing.from_channel inx in
-    lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = filename }; parse lexbuf |> Prolog.assert_f ; Print.color_print (Basic (Red,Bold)) [fullname; " compiled"] ;
+    lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = filename }; parse lexbuf |> Prolog.assert_f ; Print.color_print (Basic (Red,Bold)) [fullname; " loaded into database"] ;
  In_channel.close inx 
-and parse_cmd cmd = 
+
+let parse_cmd cmd = 
     let lexbuf = Lexing.from_string cmd in
   lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = cmd };
   parse lexbuf
 
-(* standard predicates *)
 let assertf = function
     [f] -> parse_file f 
     | _ -> assert false 
 
-let halt = fun () -> (print_endline "Halt." ; exit 0)
+let halt = fun () -> (Print.color_print (Basic (Yellow,Bold)) ["Halt."] ; exit 0)
 
 let exec_std_function (Op (x,y)) = 
     let rec extract_vals acc = function
@@ -94,16 +84,3 @@ let prompt () =
 
 let () =
     prompt ()
-(*let () =
-  Command.basic ~summary:"Parse Prolog"
-    ~readme:(fun () -> "More detailed information")
-    Command.Spec.(
-        empty
-        +> flag "-f" (optional file) ~doc:"file Parse the file"
-        )
-    (fun file () -> match file with
-    | Some f -> parse f ; prompt
-    | None -> prompt
-    )
-
-|> Command.run*)
